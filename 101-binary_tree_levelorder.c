@@ -20,14 +20,16 @@ size_t binary_tree_height(const binary_tree_t *tree)
 }
 
 /**
- * binary_tree_perform_on_level - perform a function on a specific level of a binary tree
+ * binary_tree_perform_on_level - perform a function on a
+ * specific level of a binary tree
  * @tree: pointer to the root of the tree
  * @lev: level of the tree to perform a function on
  * @func: function to perform
  *
  * Return: void
  */
-void binary_tree_perform_on_level(const binary_tree_t *tree, size_t lev, void (*func)(int))
+void binary_tree_perform_on_level(const binary_tree_t *tree,
+		size_t lev, void (*func)(int))
 {
 	if (tree == NULL)
 		return;
@@ -41,7 +43,8 @@ void binary_tree_perform_on_level(const binary_tree_t *tree, size_t lev, void (*
 }
 
 /**
- * custom_binary_tree_levelorder - traverses a binary tree using level-order traversal
+ * custom_binary_tree_levelorder - traverses a binary
+ * tree using level-order traversal
  * @tree: pointer to the root node of the tree to traverse
  * @func: pointer to a function to call for each node.
  * The value in the node must be passed as a parameter to this function
