@@ -9,10 +9,8 @@ void binary_tree_delete(binary_tree_t *tree)
 {
 	if (tree == NULL)
 	{
-		/* Post-order traversal to delete nodes starting from leaves */
 		binary_tree_delete(tree->left);
 		binary_tree_delete(tree->right);
-		/* Delete the current node */
 		free(tree);
 	}
 }
