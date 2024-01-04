@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <limits.h>
 
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 /**
  * struct binary_tree_s - Binary tree node
  *
@@ -78,5 +80,5 @@ int heap_extract(heap_t **root);
 int *heap_to_sorted_array(heap_t *heap, size_t *size);
 void binary_tree_print(const binary_tree_t *);
 
-
+size_t tree_size(const binary_tree_t *tree);
 #endif /* _BINARY_TREES_H_ */
