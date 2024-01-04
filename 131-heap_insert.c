@@ -1,6 +1,7 @@
 #include "binary_trees.h"
 #include<stdlib.h>
 #include<string.h>
+
 #define INIT_NODE {0, NULL, NULL, NULL}
 
 /**
@@ -51,6 +52,8 @@ bst_t *swap_nodes(bst_t *x, bst_t *y)
 		y = y->parent;
 	return (y);
 }
+
+
 
 /**
  * num_to_base - converts number and base into string

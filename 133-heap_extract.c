@@ -1,182 +1,131 @@
 #include "binary_trees.h"
-#include <stdlib.h>
 
-#define INIT_NODE {0, NULL, NULL, NULL}
-#define HEX_DIGITS "0123456789ABCDEF"
-#define NODE_SETUP_BLOCK { \
-	temp = *root; \
-	s = binary_tree_size(*root); \
-	binx = &buffx[49]; \
-	*binx = 0; \
-}
+/**
+ * count_tree_nodes - Counts the number of nodes inside a tree
+ * @root: Pointer to tree's root node
+ *
+ * Return: Number of tree nodes
+ */
+int count_tree_nodes(binary_tree_t *root)
+{
+	if (!root)
+		return (0);
 
-#define NODE_FREE_BLOCK { \
-	r = temp->n; \
-	free(temp); \
-	*root = NULL; \
-}
-
-#define TOP_SWAP_BLOCK { \
-	top = *root; \
-	top = swap_top(top, temp); \
-	r = top->n; \
-	free(top); \
-	*root = temp; \
-	temp = fix_position(temp); \
-	*root = temp; \
-}
-
-#define CONVERT_LOOP_BLOCK { \
-	*--binx = HEX_DIGITS[s % 2]; \
-	s /= 2; \
+	return (1 + count_tree_nodes(root->left) +
+		    count_tree_nodes(root->right));
 }
 
 /**
- * node_swap - swaps two nodes in a binary tree
- * @x: first node
- * @y: second node
- * Return: pointer to root
+ * adjust_downward - Puts a node value in a correct position in the heap
+ * @parent: Pointer to heap's node
  */
-bst_t *node_swap(bst_t *x, bst_t *y)
+void adjust_downward(heap_t *parent)
 {
-	bst_t x_c = INIT_NODE;
+	int tmp;
+	heap_t *next_one = NULL;
 
-	x_c.n = x->n;
-	x_c.parent = x->parent;
-	x_c.left = x->left;
-	x_c.right = x->right;
-	x->parent = y;
-	x->left = y->left;
-	x->right = y->right;
-	if (y->left)
-		y->left->parent = x;
-	if (y->right)
-		y->right->parent = x;
+	if (!parent)
+		return;
 
-	y->parent = x_c.parent;
-	if (x_c.parent)
+	while (parent && parent->left)
 	{
-		if (x == x_c.parent->left)
-			x_c.parent->left = y;
-		else
-			x_c.parent->right = y;
+		next_one = parent->left;
+
+		if (parent->right && parent->right->n > parent->left->n)
+			next_one = parent->right;
+
+		if (next_one->n > parent->n)
+		{
+			tmp = parent->n;
+			parent->n = next_one->n;
+			next_one->n = tmp;
+		}
+
+		parent = next_one;
 	}
-	if (y == x_c.left)
-	{
-		y->left = x;
-		y->right = x_c.right;
-		if (x_c.right)
-			x_c.right->parent = y;
-	}
-	else if (y == x_c.right)
-	{
-		y->right = x;
-		y->left = x_c.left;
-		if (x_c.left)
-			x_c.left->parent = y;
-	}
-	while (y->parent)
-		y = y->parent;
-	return (y);
 }
 
 /**
- * swap_top - helper func to swap top and node
- * @top: pointer to top
- * @node: pointer to node
- * Return: pointer to severed top of tree
+ * find_parent - Finds the parent node for a certain node
+ * @root: Pointer to heap's node
+ * @value: Value of the current node
+ * @tree: Value been searched
+ *
+ * Return: Pointer to heap's node
  */
-heap_t *swap_top(heap_t *top, heap_t *node)
+heap_t *find_parent(heap_t *root, int value, int tree)
 {
-	if (node->parent->left == node)
-	{
-		node->parent->left = NULL;
-	} else
-		node->parent->right = NULL;
-	node->parent = NULL;
-	node->left = top->left;
-	node->right = top->right;
-	if (top->left)
-		top->left->parent = node;
-	if (top->right)
-		top->right->parent = node;
-	return (top);
-}
+	heap_t *l = NULL, *r = NULL;
 
-/**
- * fix_position - percolate top into correct position
- * @node: pointer to top
- * Return: pointer to top of tree
- */
-heap_t *fix_position(heap_t *node)
-{
-	int high;
-	heap_t *new = node;
-
-	if (!node)
+	if (!root || value > tree)
 		return (NULL);
-	high = node->n;
-	if (node->left)
-		high = MAX(node->left->n, high);
-	if (node->right)
-		high = MAX(node->right->n, high);
-	if (node->left && high == node->left->n)
-		new = node->left;
-	else if (node->right && high == node->right->n)
-		new = node->right;
-	if (new != node)
-	{
-		node_swap(node, new);
-		fix_position(node);
-	}
-	return (new);
+
+	if (value == tree)
+		return (root);
+
+	l = find_parent(root->left, value * 2 + 1, tree);
+	if (l)
+		return (l);
+
+	r = find_parent(root->right, value * 2 + 2, tree);
+	if (r)
+		return (r);
+
+	return (NULL);
 }
 
 /**
- * heap_extract - extracts the root node of a Max Binary Heap
- * @root: double pointer to root of tree
- * Return: value stored in the root node
+ * delete_last_node - Removes the last node of a heap
+ * @root: Double pointer to heap's root node
+ * @parent: Pointer to parent node from which to remove the last node
+ */
+void delete_last_node(heap_t **root, heap_t *parent)
+{
+	if (parent == *root && !parent->left)
+	{
+		free(*root);
+		*root = NULL;
+
+		return;
+	}
+
+	if (parent->right)
+	{
+		(*root)->n = parent->right->n;
+		free(parent->right);
+		parent->right = NULL;
+	}
+	else if (parent->left)
+	{
+		(*root)->n = parent->left->n;
+		free(parent->left);
+		parent->left = NULL;
+	}
+
+	adjust_downward(*root);
+}
+
+/**
+ * heap_extract - Extracts the max value of a heap
+ * @root: Double pointer to heap's root node
+ *
+ * Return: Heap's max value
  */
 int heap_extract(heap_t **root)
 {
-	size_t s, q;
-	char *binx, c_w, buffx[50];
-	int r;
-	heap_t *temp, *top;
+	int nx, tree = 0, high = 0;
+	heap_t *parent;
 
-	if (!root || !*root)
+	if (!root || !(*root))
 		return (0);
-	NODE_SETUP_BLOCK;
-	if (s == 1)
-	{
-		NODE_FREE_BLOCK;
-		return (r);
-	}
-	do {
-		CONVERT_LOOP_BLOCK;
-	} while (s);
 
-	for (q = 1; q < strlen(binx); q++)
-	{
-		c_w = binx[q];
-		if (q == strlen(binx) - 1)
-		{
-			if (c_w == '1')
-			{
-				temp = temp->right;
-				break;
-			}
-			else if (c_w == '0')
-			{
-				temp = temp->left;
-				break;
-			}
-		}
-		if (c_w == '1')
-			temp = temp->right;
-		else if (c_w == '0')
-			temp = temp->left;
-	}
-	TOP_SWAP_BLOCK;
-	return (r);
+	high = (*root)->n;
+	nx = count_tree_nodes(*root);
+
+	tree = (nx - 2) / 2;
+	parent = find_parent(*root, 0, tree);
+
+	delete_last_node(root, parent);
+
+	return (high);
 }
